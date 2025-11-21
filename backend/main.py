@@ -58,6 +58,15 @@ async def health():
 
 
 # Socket.IO events
+from app.services.streaming_service import (
+    StreamingService,
+    handle_stream_code,
+    handle_stream_enhance
+)
+
+streaming_service = StreamingService()
+
+
 @sio.event
 async def connect(sid, environ):
     print(f"Client connected: {sid}")
@@ -75,6 +84,18 @@ async def join_project(sid, data):
     if project_id:
         await sio.enter_room(sid, f"project_{project_id}")
         await sio.emit("joined", {"project_id": project_id}, room=sid)
+
+
+@sio.event
+async def stream_code(sid, data):
+    """Handle code streaming requests"""
+    await handle_stream_code(sio, sid, data, streaming_service)
+
+
+@sio.event
+async def stream_enhance(sid, data):
+    """Handle prompt enhancement streaming"""
+    await handle_stream_enhance(sio, sid, data, streaming_service)
 
 
 if __name__ == "__main__":
